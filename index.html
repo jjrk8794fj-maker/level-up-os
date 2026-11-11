@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111318"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="LEVEL UP OS"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-192.png"><title>LEVEL UP OS</title>
+<style>
+:root{--bg:#101216;--panel:#191d24;--panel2:#222731;--line:#2b313c;--text:#f4f6f8;--muted:#929ba8;--accent:#b7f36b;--red:#ff7777;--yellow:#f5c96a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding-bottom:88px}
+header{padding:calc(env(safe-area-inset-top) + 18px) 18px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#101216ed;backdrop-filter:blur(18px);z-index:4;border-bottom:1px solid #ffffff0b}
+.brand{font-weight:850;letter-spacing:1.8px}.brand span{color:var(--accent)}.sub{font-size:11px;color:var(--muted);letter-spacing:1.5px;margin-top:4px}
+main{max-width:760px;margin:auto;padding:18px}.screen{display:none}.screen.active{display:block}
+h1{font-size:27px;margin:5px 0 4px}h2{font-size:18px;margin:0 0 14px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:15px;min-width:0}
+.metric{font-size:24px;font-weight:800;margin:8px 0 2px}.metric-label{font-size:12px;color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.stack{display:grid;gap:10px}
+button,.btn{border:0;border-radius:12px;padding:12px 14px;background:var(--accent);color:#12160d;font-weight:750;font-size:14px;cursor:pointer}
+button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}button.danger{background:#44282b;color:#ffaaaa}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{flex:1}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:5;background:#171a20f2;backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 4px calc(env(safe-area-inset-bottom) + 8px)}
+nav button{background:transparent;color:var(--muted);padding:7px 4px;min-width:0;flex:1;font-size:10px;font-weight:600}nav button b{display:block;font-size:19px;margin-bottom:3px}nav button.active{color:var(--accent)}
+input,select,textarea{width:100%;background:#11151b;border:1px solid var(--line);border-radius:11px;padding:12px;color:var(--text);font:inherit;outline:none}
+label{display:grid;gap:6px;color:var(--muted);font-size:12px}form{display:grid;gap:11px;margin-top:14px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;display:grid;gap:7px}
+.tag{display:inline-block;padding:4px 8px;border-radius:30px;background:#293329;color:var(--accent);font-size:11px}
+.bar{height:8px;background:#303640;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);border-radius:20px}
+canvas{width:100%;height:150px;display:block}.empty{text-align:center;padding:28px 10px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:#0009;z-index:10;display:none;align-items:flex-end}.modal.open{display:flex}.sheet{background:var(--panel);width:100%;max-height:88vh;overflow:auto;border-radius:22px 22px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom) + 20px);border:1px solid var(--line)}
+.sheet h2{font-size:20px}.close{float:right;background:var(--panel2);color:var(--text);padding:7px 11px}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,1fr)}main{padding:26px}}
+
+.pin-overlay{position:fixed;inset:0;background:#101216;z-index:30;display:none;align-items:center;justify-content:center;padding:24px}
+.pin-box{width:min(100%,360px);text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px}
+.pin-dots{font-size:28px;letter-spacing:12px;margin:20px;color:var(--accent);min-height:38px}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}
+.pin-pad button{background:var(--panel2);color:var(--text);font-size:20px;padding:16px}
+.pin-pad button:last-child{background:var(--accent);color:#111}
+.client-actions{display:flex;gap:7px;flex-wrap:wrap}
+.client-actions button{font-size:12px;padding:9px}
+</style></head>
+<body>
+<header><div><div class="brand">LEVEL <span>UP</span> OS</div><div class="sub">PERSONAL OPERATING SYSTEM</div></div><div class="small" id="today"></div></header>
+<main>
+<section class="screen active" id="dashboard">
+ <div class="row"><div><div class="small">ОБЗОР · ЛИЧНЫЙ КАБИНЕТ</div><h1>Мой прогресс</h1></div><span class="tag">LOCAL</span></div>
+ <div class="grid">
+  <div class="card"><div class="metric-label">Доход за месяц</div><div class="metric" id="mIncome">0 ₸</div><div class="small">Поступления</div></div>
+  <div class="card"><div class="metric-label">Расходы за месяц</div><div class="metric" id="mExpense">0 ₸</div><div class="small">Учтённые расходы</div></div>
+  <div class="card"><div class="metric-label">Клиенты</div><div class="metric" id="mClients">0</div><div class="small">В базе</div></div>
+  <div class="card"><div class="metric-label">Активные задачи</div><div class="metric" id="mTasks">0</div><div class="small">Не завершены</div></div>
+ </div>
+ <div class="card"><div class="row"><h2>Финансовый поток</h2><span class="small">6 месяцев</span></div><canvas id="chart" width="700" height="180"></canvas><div class="small">График строится по внесённым операциям</div></div>
+ <div style="height:12px"></div><div class="card"><div class="row"><h2>Фокус дня</h2><span class="small" id="taskCount">0 / 0</span></div><div class="bar"><i id="taskBar" style="width:0%"></i></div><div id="todayTasks" class="stack" style="margin-top:12px"></div></div>
+ <div style="height:12px"></div><div class="row"><h2>Быстрые действия</h2></div><div class="actions"><button onclick="openForm('client')">＋ Клиент</button><button onclick="openForm('task')">＋ Задача</button><button onclick="openForm('finance')">＋ Операция</button></div>
+</section>
+<section class="screen" id="clients"><div class="row"><div><div class="small">ОТНОШЕНИЯ</div><h1>Клиенты</h1></div><button onclick="openForm('client')">＋ Добавить</button></div><div id="clientList" class="stack" style="margin-top:16px"></div></section>
+<section class="screen" id="projects"><div class="row"><div><div class="small">РАБОЧИЕ ПОТОКИ</div><h1>Проекты и заказы</h1></div><button onclick="openForm('project')">＋ Добавить</button></div><div id="projectList" class="stack" style="margin-top:16px"></div></section>
+<section class="screen" id="finance"><div class="row"><div><div class="small">УПРАВЛЕНИЕ ДЕНЬГАМИ</div><h1>Финансы</h1></div><button onclick="openForm('finance')">＋ Операция</button></div>
+<div class="grid"><div class="card"><div class="metric-label">Баланс учёта</div><div class="metric" id="balance">0 ₸</div></div><div class="card"><div class="metric-label">Чистый поток месяца</div><div class="metric" id="net">0 ₸</div></div></div>
+<div class="card" style="margin-bottom:12px"><div class="row"><h2>Денежный поток по направлениям</h2><button class="secondary" onclick="addDirection()">＋ Направление</button></div><div class="small">Суммы за текущий месяц. Каждую операцию можно отнести к своему направлению.</div><div id="directionSummary" class="stack" style="margin-top:12px"></div></div>
+<div class="card" style="margin-bottom:14px"><h2>Рентабельность по направлениям · текущий месяц</h2><div id="profitability" class="stack"></div><div class="small" style="margin-top:8px">Рентабельность продаж = прибыль / выручка × 100%. При нулевой выручке процент не рассчитывается.</div></div><div class="row"><h2>Операции</h2><span class="small" id="operationCount"></span></div><div id="financeList" class="stack"></div>
+</section>
+<section class="screen" id="inventory"><div class="row"><div><div class="small">УЧЁТ ЗАПАСОВ</div><h1>Склад</h1></div><button onclick="openForm('inventory')">＋ Номенклатура</button></div>
+<div class="actions" style="margin:12px 0"><button onclick="openForm('stockmove')">＋ Приход / расход</button><button class="secondary" onclick="openForm('recipe')">＋ Техкарта</button></div>
+<div class="grid"><div class="card"><div class="metric-label">Позиций</div><div class="metric" id="stockItemsCount">0</div></div><div class="card"><div class="metric-label">Остаток по себестоимости</div><div class="metric" id="stockValue">0 ₸</div></div></div>
+<div class="row"><h2>Остатки</h2><span class="small">Количество · минимальный запас</span></div><div id="stockList" class="stack"></div>
+<div style="height:14px"></div><h2>Технологические карты</h2><div id="recipeList" class="stack"></div>
+</section>
+<section class="screen" id="assets"><div class="row"><div><div class="small">ИМУЩЕСТВО И КАПИТАЛ</div><h1>Активы</h1></div><button onclick="openForm('asset')">＋ На приход</button></div>
+<div class="grid"><div class="card"><div class="metric-label">Стоимость приобретения</div><div class="metric" id="assetCost">0 ₸</div></div><div class="card"><div class="metric-label">Текущая оценка</div><div class="metric" id="assetCurrent">0 ₸</div></div></div>
+<div id="assetList" class="stack"></div>
+</section>
+<section class="screen" id="tasks"><div class="row"><div><div class="small">ПЛАНИРОВАНИЕ</div><h1>Задачи</h1></div><button onclick="openForm('task')">＋ Задача</button></div><div id="taskList" class="stack" style="margin-top:16px"></div></section>
+<section class="screen" id="growth"><div><div class="small">ЛИЧНАЯ ЭФФЕКТИВНОСТЬ</div><h1>Развитие</h1></div><div class="card" style="margin-top:16px"><h2>Привычки и показатели</h2><p class="small">Добавляй регулярные действия и отмечай выполнение. В следующей итерации добавим серии, XP и уровни.</p><button onclick="openForm('habit')">＋ Добавить привычку</button></div><div id="habitList" class="stack" style="margin-top:12px"></div></section>
+<section class="screen" id="settings"><div><div class="small">СИСТЕМА</div><h1>Настройки и данные</h1></div><div class="card" style="margin-top:16px"><h2>Резервная копия</h2><p class="small">Экспортируй JSON-файл и храни его отдельно. Импорт заменит текущие данные.</p><div class="actions"><button onclick="exportData()">Экспорт данных</button><button class="secondary" onclick="document.getElementById('importFile').click()">Импорт</button></div><input id="importFile" type="file" accept="application/json" hidden onchange="importData(event)"></div><div class="card" style="margin-top:12px"><h2>Защита PIN-кодом</h2><p class="small">Установи PIN из 4–8 цифр. В прототипе это экранная блокировка; она не шифрует базу данных и не заменяет защиту устройства.</p><div class="actions"><button onclick="setupPin()">Установить / изменить PIN</button><button class="secondary" onclick="disablePin()">Отключить PIN</button></div><div class="small" id="pinStatus" style="margin-top:10px"></div></div><div class="card" style="margin-top:12px"><h2>Хранилище</h2><div class="small" id="storageInfo">Локальные данные</div><hr><button class="danger" onclick="clearData()">Удалить все данные</button></div></section>
+</main>
+<nav>
+<button class="active" data-screen="dashboard"><b>⌂</b>Обзор</button><button data-screen="clients"><b>♙</b>Клиенты</button><button data-screen="projects"><b>▣</b>Проекты</button><button data-screen="finance"><b>₸</b>Финансы</button><button data-screen="inventory"><b>▤</b>Склад</button><button data-screen="assets"><b>◇</b>Активы</button><button data-screen="tasks"><b>✓</b>Задачи</button><button data-screen="growth"><b>↗</b>Рост</button><button data-screen="settings"><b>⚙</b>Ещё</button>
+</nav>
+
+<div class="pin-overlay" id="pinOverlay"><div class="pin-box">
+ <div class="brand">LEVEL <span>UP</span> OS</div><h2 id="pinTitle" style="margin-top:18px">Введите PIN-код</h2>
+ <div class="small" id="pinHint">Для доступа к рабочему пространству</div><div class="pin-dots" id="pinDots">○ ○ ○ ○</div>
+ <div class="pin-pad" id="pinPad"></div><div class="small" id="pinError" style="color:var(--red);margin-top:12px"></div>
+</div></div>
+<div class="modal" id="modal"  onclick="if(event.target===this)closeModal()"><div class="sheet"><button class="close" onclick="closeModal()">✕</button><div id="formContent"></div></div></div>
+<script>
+const KEY='levelup_os_v1';
+let db=load();
+function load(){try{let x=JSON.parse(localStorage.getItem(KEY))||{};return {clients:x.clients||[],projects:x.projects||[],finance:x.finance||[],tasks:x.tasks||[],habits:x.habits||[],interactions:x.interactions||[],directions:x.directions||['Личное','3D-печать','Пошив','Strikeball','Полиграфия','Магия / мероприятия','Другое'],inventory:x.inventory||[],stockMoves:x.stockMoves||[],assets:x.assets||[],recipes:x.recipes||[],pinHash:x.pinHash||null,pinEnabled:x.pinEnabled||false}}catch(e){return {clients:[],projects:[],finance:[],tasks:[],habits:[],interactions:[],directions:['Личное','3D-печать','Пошив','Strikeball','Полиграфия','Магия / мероприятия','Другое'],inventory:[],stockMoves:[],assets:[],recipes:[],pinHash:null,pinEnabled:false}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+const fmt=n=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:0}).format(n||0)+' ₸';
+const today=()=>new Date().toISOString().slice(0,10);
+document.getElementById('today').textContent=new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'short'});
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(b.dataset.screen).classList.add('active');});
+function openForm(type,id=null){const table={client:'clients',project:'projects',finance:'finance',task:'tasks',habit:'habits',inventory:'inventory',asset:'assets',recipe:'recipes'}[type];const old=id&&table?db[table].find(x=>x.id===id):null;let title='',fields='';
+const field=(name,label,kind='text',value='',opts='')=>`<label>${label}<input name="${name}" type="${kind}" value="${String(value??'').replace(/"/g,'&quot;')}" ${opts} required></label>`;
+if(type==='client'){title='Новый клиент';fields=field('name','Имя', 'text',old?.name)+field('phone','Телефон','tel',old?.phone)+field('email','Email','email',old?.email||'')+field('company','Компания','text',old?.company||'')+field('nextContact','Следующий контакт','date',old?.nextContact||'')+`<label>Направление<select name="direction"><option>3D-печать</option><option>Пошив</option><option>Strikeball</option><option>Полиграфия</option><option>Магия / мероприятия</option><option>Другое</option></select></label>`+field('source','Источник обращения','text',old?.source||'')+`<label>Комментарий<textarea name="note">${old?.note||''}</textarea></label>`}
+if(type==='project'){title='Новый проект / заказ';fields=field('name','Название','text',old?.name)+`<label>Направление<select name="direction"><option>3D-печать</option><option>Пошив</option><option>Strikeball</option><option>Полиграфия</option><option>Магия / мероприятия</option><option>Другое</option></select></label>`+`<label>Клиент<select name="client"><option value="">Без привязки</option>${db.clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select></label>`+field('amount','Сумма заказа','number',old?.amount||0,'min="0"')+field('quantity','Количество изделий','number',old?.quantity||1,'min="1" step="1"')+`<label>Техкарта<select name="recipeId"><option value="">Без техкарты</option>${db.recipes.map(r=>`<option value="${r.id}" ${old?.recipeId===r.id?'selected':''}>${esc(r.name)}</option>`).join('')}</select></label>`+`<label>Статус<select name="status"><option>Новая заявка</option><option>Обсуждение</option><option>Ожидает оплаты</option><option>В производстве</option><option>Завершён</option><option>Отказ</option></select></label>`+field('due','Срок','date',old?.due||today())}
+if(type==='finance'){title='Финансовая операция';fields=`<label>Тип<select name="kind"><option value="income" ${old?.kind==='income'?'selected':''}>Доход</option><option value="expense" ${old?.kind==='expense'?'selected':''}>Расход</option></select></label>`+field('amount','Сумма, ₸','number',old?.amount||'','min="1" step="0.01"')+`<label>Направление<select name="direction">${db.directions.map(d=>`<option ${old?.direction===d?'selected':''}>${esc(d)}</option>`).join('')}</select></label>`+field('category','Статья / категория','text',old?.category||'')+field('date','Дата','date',old?.date||today())+field('note','Комментарий','text',old?.note||'')}
+
+if(type==='inventory'){title='Номенклатура склада';fields=field('name','Название материала / товара','text',old?.name)+field('sku','Артикул','text',old?.sku||'')+field('unit','Единица измерения (шт, кг, м, л)','text',old?.unit||'шт')+field('qty','Начальный остаток','number',old?.qty??0,'min="0" step="0.001"')+field('minQty','Минимальный остаток','number',old?.minQty??0,'min="0" step="0.001"')+field('cost','Себестоимость за единицу, ₸','number',old?.cost??0,'min="0" step="0.01"')+field('location','Место хранения','text',old?.location||'')}
+if(type==='stockmove'){title='Движение склада';fields=`<label>Операция<select name="kind"><option value="in">Приход</option><option value="out">Расход / списание</option></select></label><label>Номенклатура<select name="itemId">${db.inventory.map(i=>`<option value="${i.id}">${esc(i.name)} · остаток ${i.qty} ${esc(i.unit)}</option>`).join('')}</select></label>`+field('qty','Количество','number',1,'min="0.001" step="0.001"')+field('date','Дата','date',today())+field('note','Основание / комментарий','text','')}
+if(type==='asset'){title='Постановка имущества на приход';fields=field('name','Наименование имущества','text',old?.name)+`<label>Категория<select name="category"><option>Оборудование</option><option>Инструменты</option><option>Транспорт</option><option>Мебель</option><option>Электроника</option><option>Прочее</option></select></label>`+field('qty','Количество','number',old?.qty??1,'min="1"')+field('purchaseCost','Стоимость приобретения, ₸','number',old?.purchaseCost??0,'min="0"')+field('currentValue','Текущая оценка, ₸','number',old?.currentValue??0,'min="0"')+field('date','Дата приобретения','date',old?.date||today())+field('location','Местонахождение','text',old?.location||'')+field('condition','Состояние','text',old?.condition||'Исправно')}
+if(type==='recipe'){title='Технологическая карта';fields=field('name','Название изделия / услуги','text',old?.name)+`<label>Направление<select name="direction">${db.directions.map(d=>`<option>${esc(d)}</option>`).join('')}</select></label>`+`<label>Материалы на одну единицу<select name="components" multiple size="6">${db.inventory.map(i=>`<option value="${i.id}">${esc(i.name)} (${esc(i.unit)})</option>`).join('')}</select></label><div class="small">После сохранения укажи норму расхода каждого материала в отдельном диалоге.</div>`}
+if(type==='task'){title='Новая задача';fields=field('name','Что нужно сделать','text',old?.name)+field('due','Дата','date',old?.due||today())+`<label>Приоритет<select name="priority"><option>Обычный</option><option>Высокий</option><option>Срочный</option></select></label>`+`<label>Связь с направлением<select name="direction"><option>Личное</option><option>3D-печать</option><option>Пошив</option><option>Strikeball</option><option>Полиграфия</option><option>Магия / мероприятия</option></select></label>`}
+if(type==='habit'){title='Новая привычка';fields=field('name','Название','text',old?.name)+field('target','Цель в неделю','number',old?.target||'3','min="1" max="7"')}
+document.getElementById('formContent').innerHTML=`<h2>${title}</h2><form id="entryForm">${fields}<button type="submit">Сохранить</button></form>`;
+document.getElementById('entryForm').onsubmit=e=>{e.preventDefault();const o=Object.fromEntries(new FormData(e.target).entries());if(type==='finance'||type==='project'||type==='habit')o.amount=Number(o.amount||0);if(type==='habit')o.target=Number(o.target);if(type==='task')o.done=old?.done||false;
+if(type==='inventory'){o.qty=Number(o.qty);o.minQty=Number(o.minQty);o.cost=Number(o.cost);const key='inventory';if(old)Object.assign(old,o);else db[key].unshift({id:crypto.randomUUID(),...o});save();closeModal();return}
+if(type==='stockmove'){o.qty=Number(o.qty);const it=db.inventory.find(x=>x.id===o.itemId);if(!it){alert('Сначала добавь номенклатуру');return}if(o.kind==='out'&&it.qty<o.qty){alert('Недостаточно остатка. Доступно: '+it.qty+' '+it.unit);return}it.qty=Number(it.qty)+(o.kind==='in'?o.qty:-o.qty);db.stockMoves.unshift({id:crypto.randomUUID(),...o,itemName:it.name,unit:it.unit,created:new Date().toISOString()});save();closeModal();return}
+if(type==='asset'){o.qty=Number(o.qty);o.purchaseCost=Number(o.purchaseCost);o.currentValue=Number(o.currentValue);if(old)Object.assign(old,o);else db.assets.unshift({id:crypto.randomUUID(),...o});save();closeModal();return}
+if(type==='recipe'){const selected=[...e.target.elements.components.selectedOptions].map(x=>x.value);if(!selected.length){alert('Выбери хотя бы один материал');return}o.components=selected.map(id=>{const it=db.inventory.find(x=>x.id===id);const qty=Number(prompt('Норма расхода на единицу: '+it.name+' ('+it.unit+')','1'));return {itemId:id,qty:Number.isFinite(qty)&&qty>0?qty:0}}).filter(x=>x.qty>0);if(!o.components.length){alert('Нужно указать нормы расхода');return}db.recipes.unshift({id:crypto.randomUUID(),...o});save();closeModal();return}
+const key=type==='client'?'clients':type==='project'?'projects':type==='finance'?'finance':type==='task'?'tasks':'habits';if(old)Object.assign(old,o);else db[key].unshift({id:crypto.randomUUID(),...o,created:new Date().toISOString()});save();closeModal()};document.getElementById('modal').classList.add('open')}
+function closeModal(){document.getElementById('modal').classList.remove('open')}
+function del(key,id){if(confirm('Удалить запись?')){db[key]=db[key].filter(x=>x.id!==id);save()}}
+
+
+
+function consumeRecipe(projectId){
+ const p=db.projects.find(x=>x.id===projectId),r=db.recipes.find(x=>x.id===p?.recipeId);if(!p||!r)return;
+ if(p.stockWrittenOff){alert('По этому заказу материалы уже списаны');return}
+ const qty=Number(p.quantity||1),need=r.components.map(c=>({item:db.inventory.find(i=>i.id===c.itemId),qty:Number(c.qty)*qty})).filter(x=>x.item);
+ const shortage=need.filter(x=>Number(x.item.qty)<x.qty);
+ if(shortage.length){alert('Недостаточно материалов:\n'+shortage.map(x=>x.item.name+': нужно '+x.qty+', доступно '+x.item.qty).join('\n'));return}
+ if(!confirm('Списать материалы по техкарте «'+r.name+'» на '+qty+' ед.?'))return;
+ need.forEach(x=>{x.item.qty=Number(x.item.qty)-x.qty;db.stockMoves.unshift({id:crypto.randomUUID(),kind:'out',itemId:x.item.id,itemName:x.item.name,qty:x.qty,unit:x.item.unit,date:today(),note:'Автосписание по заказу: '+p.name,projectId:p.id})});
+ p.stockWrittenOff=true;p.materialCost=need.reduce((a,x)=>a+x.qty*Number(x.item.cost),0);
+ if(p.materialCost>0)db.finance.unshift({id:crypto.randomUUID(),kind:'expense',amount:p.materialCost,direction:p.direction||'Другое',category:'Себестоимость материалов',date:today(),note:'Автосписание по заказу: '+p.name,projectId:p.id});
+ save();
+}
+
+function addDirection(){
+ const name=prompt('Название нового финансового направления:');if(!name)return;
+ const clean=name.trim();if(!clean)return;
+ if(db.directions.some(x=>x.toLowerCase()===clean.toLowerCase())){alert('Такое направление уже есть');return}
+ db.directions.push(clean);save();
+}
+
+function clientHistory(id){
+ const c=db.clients.find(x=>x.id===id);if(!c)return;
+ const logs=db.interactions.filter(x=>x.clientId===id).sort((a,b)=>b.date.localeCompare(a.date));
+ const orders=db.projects.filter(p=>p.client===id);
+ document.getElementById('formContent').innerHTML=`<h2>${esc(c.name)} · история</h2>
+ <div class="small">Заказы: ${orders.length} · сумма заказов: ${fmt(orders.reduce((a,p)=>a+Number(p.amount||0),0))}</div>
+ <form id="interactionForm"><label>Тип контакта<select name="kind"><option>Звонок</option><option>Сообщение</option><option>Встреча</option><option>Письмо</option><option>Другое</option></select></label>
+ <label>Дата<input name="date" type="date" value="${today()}" required></label>
+ <label>Итог / заметка<textarea name="note" required></textarea></label>
+ <button type="submit">Добавить в историю</button></form><hr><h2>История взаимодействий</h2>
+ ${logs.map(x=>`<div class="item"><b>${esc(x.kind)} · ${esc(x.date)}</b><div class="small">${esc(x.note)}</div></div>`).join('')||empty('История пока пустая')}`;
+ document.getElementById('interactionForm').onsubmit=e=>{e.preventDefault();let o=Object.fromEntries(new FormData(e.target).entries());db.interactions.unshift({id:crypto.randomUUID(),clientId:id,...o});save();clientHistory(id)};
+ document.getElementById('modal').classList.add('open');
+}
+
+
+let pinBuffer='',pinMode='unlock',pinFirst='';
+function hashPin(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
+function showPin(mode){pinMode=mode;pinBuffer='';pinTitle.textContent=mode==='setup'?'Создайте PIN-код':mode==='confirm'?'Повторите PIN-код':'Введите PIN-код';pinHint.textContent=mode==='unlock'?'Для доступа к рабочему пространству':'Используйте 4–8 цифр';pinError.textContent='';pinDots.textContent='○ ○ ○ ○';pinPad.innerHTML='';[1,2,3,4,5,6,7,8,9,'⌫',0,'OK'].forEach(n=>{let b=document.createElement('button');b.textContent=n;b.onclick=()=>pinKey(String(n));pinPad.appendChild(b)});pinOverlay.style.display='flex'}
+function pinKey(k){if(k==='⌫'){pinBuffer=pinBuffer.slice(0,-1)}else if(k==='OK'){submitPin();return}else if(/^\\d$/.test(k)&&pinBuffer.length<8){pinBuffer+=k}pinDots.textContent=Array.from({length:Math.max(4,pinBuffer.length)},(_,i)=>i<pinBuffer.length?'●':'○').join(' ')}
+function submitPin(){if(pinBuffer.length<4){pinError.textContent='Нужно минимум 4 цифры';return}
+ if(pinMode==='setup'){pinFirst=pinBuffer;pinBuffer='';showPin('confirm');return}
+ if(pinMode==='confirm'){if(pinBuffer!==pinFirst){pinError.textContent='Коды не совпали';pinBuffer='';return}db.pinHash=hashPin(pinBuffer);db.pinEnabled=true;localStorage.setItem(KEY,JSON.stringify(db));pinOverlay.style.display='none';render();return}
+ if(hashPin(pinBuffer)===db.pinHash){pinOverlay.style.display='none';return}pinError.textContent='Неверный PIN';pinBuffer='';pinDots.textContent='○ ○ ○ ○'}
+function setupPin(){pinFirst='';showPin('setup')}
+function disablePin(){if(!db.pinEnabled){alert('PIN уже отключён');return}if(confirm('Отключить PIN-защиту?')){db.pinEnabled=false;db.pinHash=null;save()}}
+window.addEventListener('load',()=>{if(db.pinEnabled)showPin('unlock')});
+
+function monthOpsFor(d){const m=today().slice(0,7);return db.finance.filter(x=>x.date?.startsWith(m)&&(x.direction||'Другое')===d)}
+function render(){const month=today().slice(0,7),inc=db.finance.filter(x=>x.kind==='income'&&x.date?.startsWith(month)).reduce((a,x)=>a+Number(x.amount),0),exp=db.finance.filter(x=>x.kind==='expense'&&x.date?.startsWith(month)).reduce((a,x)=>a+Number(x.amount),0);
+mIncome.textContent=fmt(inc);mExpense.textContent=fmt(exp);mClients.textContent=db.clients.length;mTasks.textContent=db.tasks.filter(x=>!x.done).length;balance.textContent=fmt(db.finance.reduce((a,x)=>a+(x.kind==='income'?1:-1)*Number(x.amount),0));net.textContent=fmt(inc-exp);
+profitability.innerHTML=db.directions.map(d=>{const rows=monthOpsFor(d),rev=rows.filter(x=>x.kind==='income').reduce((a,x)=>a+Number(x.amount),0),cost=rows.filter(x=>x.kind==='expense').reduce((a,x)=>a+Number(x.amount),0),profit=rev-cost,margin=rev?profit/rev*100:null;return `<div class="item"><div class="row"><b>${esc(d)}</b><b style="color:${profit>=0?'var(--accent)':'var(--red)'}">${fmt(profit)}</b></div><div class="row small"><span>Выручка ${fmt(rev)}</span><span>Затраты ${fmt(cost)}</span></div><div class="row small"><span>Рентабельность продаж</span><b>${margin===null?'—':margin.toFixed(1)+'%'}</b></div></div>`}).join('')||empty('Добавь финансовые направления');
+clientList.innerHTML=db.clients.map(c=>{let orders=db.projects.filter(p=>p.client===c.id),sum=orders.reduce((a,p)=>a+Number(p.amount||0),0),logs=db.interactions.filter(x=>x.clientId===c.id);return `<div class="item"><div class="row"><b>${esc(c.name)}</b><span class="tag">${esc(c.direction||'Клиент')}</span></div><div class="small">${esc(c.phone||'')} ${c.company?'· '+esc(c.company):''} ${c.email?'· '+esc(c.email):''}</div><div class="row"><span class="small">Заказов: ${orders.length} · Сумма: ${fmt(sum)}</span><span class="small">${logs.length} контактов</span></div>${c.nextContact?`<div class="small">Следующий контакт: ${esc(c.nextContact)}</div>`:''}<div class="small">${esc(c.note||'')}</div><div class="client-actions"><button class="secondary" onclick="openForm('client','${c.id}')">Изменить</button><button class="secondary" onclick="clientHistory('${c.id}')">История / контакт</button><button class="danger" onclick="del('clients','${c.id}')">Удалить</button></div></div>`}).join('')||empty('Клиентов пока нет');
+projectList.innerHTML=db.projects.map(p=>`<div class="item"><div class="row"><b>${esc(p.name)}</b><span class="tag">${esc(p.status)}</span></div><div class="small">${esc(p.direction)} · ${fmt(p.amount)} · ${esc(db.clients.find(c=>c.id===p.client)?.name||'Без клиента')} · срок ${esc(p.due||'—')}</div><div class="actions"><button class="secondary" onclick="openForm('project','${p.id}')">Изменить</button>${p.recipeId&&!p.stockWrittenOff?`<button onclick="consumeRecipe('${p.id}')">Списать материалы</button>`:''}${p.stockWrittenOff?'<span class="tag">Материалы списаны</span>':''}<button class="danger" onclick="del('projects','${p.id}')">Удалить</button></div></div>`).join('')||empty('Проектов пока нет');
+const monthOps=db.finance.filter(x=>x.date?.startsWith(month));
+directionSummary.innerHTML=db.directions.map(d=>{const rows=monthOps.filter(x=>(x.direction||'Другое')===d),di=rows.filter(x=>x.kind==='income').reduce((a,x)=>a+Number(x.amount),0),de=rows.filter(x=>x.kind==='expense').reduce((a,x)=>a+Number(x.amount),0),netD=di-de;if(!rows.length)return '';return `<div class="item"><div class="row"><b>${esc(d)}</b><b style="color:${netD>=0?'var(--accent)':'var(--red)'}">${netD>=0?'+':'−'}${fmt(Math.abs(netD))}</b></div><div class="row small"><span>Доход: ${fmt(di)}</span><span>Расход: ${fmt(de)}</span></div></div>`}).join('')||empty('За этот месяц операций по направлениям пока нет');
+operationCount.textContent=monthOps.length+' за месяц';
+financeList.innerHTML=db.finance.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(f=>`<div class="item"><div class="row"><b>${esc(f.category||'Операция')}</b><b style="color:${f.kind==='income'?'var(--accent)':'var(--red)'}">${f.kind==='income'?'+':'−'}${fmt(f.amount)}</b></div><div class="small">${esc(f.date)} · ${esc(f.direction||'Без направления')} · ${esc(f.note||'')}</div><button class="danger" onclick="del('finance','${f.id}')">Удалить</button></div>`).join('')||empty('Операций пока нет');
+const tasks=db.tasks.slice().sort((a,b)=>(a.due||'').localeCompare(b.due||''));taskList.innerHTML=tasks.map(t=>`<div class="item"><div class="row"><label style="display:flex;align-items:center;gap:9px;color:var(--text)"><input type="checkbox" style="width:auto" ${t.done?'checked':''} onchange="toggleTask('${t.id}')">${t.done?'<s>':''}${esc(t.name)}${t.done?'</s>':''}</label><span class="tag">${esc(t.priority)}</span></div><div class="small">${esc(t.due)} · ${esc(t.direction)}</div><button class="danger" onclick="del('tasks','${t.id}')">Удалить</button></div>`).join('')||empty('Задач пока нет');
+const todays=db.tasks.filter(t=>t.due===today()),done=todays.filter(t=>t.done).length;taskCount.textContent=`${done} / ${todays.length}`;taskBar.style.width=(todays.length?done/todays.length*100:0)+'%';todayTasks.innerHTML=todays.map(t=>`<div class="small">${t.done?'✓':'○'} ${esc(t.name)}</div>`).join('')||'<div class="small">На сегодня задач нет</div>';
+habitList.innerHTML=db.habits.map(h=>`<div class="item"><div class="row"><b>${esc(h.name)}</b><span class="tag">${h.target} раз/нед.</span></div><div class="actions"><button onclick="markHabit('${h.id}')">Отметить сегодня</button><button class="danger" onclick="del('habits','${h.id}')">Удалить</button></div><div class="small">Отметок: ${h.logs?.length||0}</div></div>`).join('')||empty('Добавь первую привычку');
+stockItemsCount.textContent=db.inventory.length;stockValue.textContent=fmt(db.inventory.reduce((a,x)=>a+Number(x.qty)*Number(x.cost),0));
+stockList.innerHTML=db.inventory.map(i=>`<div class="item"><div class="row"><b>${esc(i.name)}</b><span class="tag">${i.qty} ${esc(i.unit)}</span></div><div class="small">Артикул: ${esc(i.sku||'—')} · Себестоимость: ${fmt(i.cost)} / ${esc(i.unit)} · Минимум: ${i.minQty} ${esc(i.unit)}</div><div class="small">${esc(i.location||'Место хранения не указано')} ${Number(i.qty)<=Number(i.minQty)?' · НИЖЕ МИНИМУМА':''}</div><div class="actions"><button class="secondary" onclick="openForm('inventory','${i.id}')">Изменить</button><button class="danger" onclick="del('inventory','${i.id}')">Удалить</button></div></div>`).join('')||empty('Склад пока пуст');
+recipeList.innerHTML=db.recipes.map(r=>`<div class="item"><b>${esc(r.name)}</b><div class="small">${esc(r.direction)} · ${r.components.map(c=>{const i=db.inventory.find(x=>x.id===c.itemId);return esc(i?.name||'Удалённый материал')+': '+c.qty+' '+esc(i?.unit||'')}).join(' · ')}</div></div>`).join('')||empty('Технологических карт пока нет');
+assetCost.textContent=fmt(db.assets.reduce((a,x)=>a+Number(x.purchaseCost)*Number(x.qty),0));assetCurrent.textContent=fmt(db.assets.reduce((a,x)=>a+Number(x.currentValue)*Number(x.qty),0));
+assetList.innerHTML=db.assets.map(a=>`<div class="item"><div class="row"><b>${esc(a.name)}</b><span class="tag">${esc(a.category)}</span></div><div class="small">Кол-во: ${a.qty} · Покупка: ${fmt(a.purchaseCost)} · Текущая оценка: ${fmt(a.currentValue)}</div><div class="small">${esc(a.location||'')} · ${esc(a.condition||'')} · ${esc(a.date||'')}</div><div class="actions"><button class="secondary" onclick="openForm('asset','${a.id}')">Изменить</button><button class="danger" onclick="del('assets','${a.id}')">Удалить</button></div></div>`).join('')||empty('Имущество пока не поставлено на приход');
+pinStatus.textContent=db.pinEnabled?'PIN-защита включена':'PIN-защита выключена';storageInfo.textContent=`Записей: ${db.clients.length+db.projects.length+db.finance.length+db.tasks.length+db.habits.length} · Данные на этом устройстве`;
+drawChart()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function empty(s){return `<div class="empty">${s}</div>`}
+function toggleTask(id){const t=db.tasks.find(x=>x.id===id);t.done=!t.done;save()}
+function markHabit(id){const h=db.habits.find(x=>x.id===id);h.logs=h.logs||[];h.logs.push(today());save()}
+function drawChart(){const c=document.getElementById('chart'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);let vals=[];for(let i=5;i>=0;i--){let d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);let key=d.toISOString().slice(0,7);vals.push(db.finance.filter(x=>x.date?.startsWith(key)).reduce((a,x)=>a+(x.kind==='income'?1:-1)*Number(x.amount),0))}let max=Math.max(1,...vals.map(Math.abs));ctx.strokeStyle='#353d48';ctx.lineWidth=1;for(let j=1;j<4;j++){ctx.beginPath();ctx.moveTo(15,j*h/4);ctx.lineTo(w-15,j*h/4);ctx.stroke()}ctx.strokeStyle='#b7f36b';ctx.lineWidth=4;ctx.beginPath();vals.forEach((v,i)=>{let x=30+i*(w-60)/5,y=h/2-(v/max)*(h*.38);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();vals.forEach((v,i)=>{let x=30+i*(w-60)/5,y=h/2-(v/max)*(h*.38);ctx.fillStyle='#b7f36b';ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill()})}
+function exportData(){let blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),data:db},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='level-up-os-backup.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);let d=x.data||x;if(!confirm('Заменить текущие данные импортированной копией?'))return;['clients','projects','finance','tasks','habits'].forEach(k=>{if(!Array.isArray(d[k]))throw Error('Некорректная копия')});d.interactions=d.interactions||[];d.directions=d.directions||['Личное','3D-печать','Пошив','Strikeball','Полиграфия','Магия / мероприятия','Другое'];d.inventory=d.inventory||[];d.stockMoves=d.stockMoves||[];d.assets=d.assets||[];d.recipes=d.recipes||[];d.pinHash=d.pinHash||null;d.pinEnabled=!!d.pinEnabled;db=d;save();alert('Данные импортированы')}catch(err){alert('Не удалось импортировать файл: '+err.message)}};r.readAsText(f)}
+function clearData(){if(confirm('Точно удалить все данные без возможности восстановления? Сначала сделай экспорт.')){db={clients:[],projects:[],finance:[],tasks:[],habits:[],interactions:[],directions:['Личное','3D-печать','Пошив','Strikeball','Полиграфия','Магия / мероприятия','Другое'],inventory:[],stockMoves:[],assets:[],recipes:[],pinHash:null,pinEnabled:false};save()}}
+render();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('Service worker registration failed',err)));}
+</script></body></html>
