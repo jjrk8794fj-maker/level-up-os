@@ -132,10 +132,66 @@ function consumeRecipe(projectId){
 }
 
 function addDirection(){
- const name=prompt('Название нового финансового направления:');if(!name)return;
- const clean=name.trim();if(!clean)return;
- if(db.directions.some(x=>x.toLowerCase()===clean.toLowerCase())){alert('Такое направление уже есть');return}
- db.directions.push(clean);save();
+ const action=prompt(
+ 'УПРАВЛЕНИЕ НАПРАВЛЕНИЯМИ\n\n'+
+ '1 — Добавить\n'+
+ '2 — Переименовать\n'+
+ '3 — Удалить'
+ );
+ if(!action)return;
+
+ if(action==='1'){
+  const name=prompt('Название нового направления:');
+  if(!name||!name.trim())return;
+  const clean=name.trim();
+  if(db.directions.some(x=>x.toLowerCase()===clean.toLowerCase())){
+   alert('Такое направление уже существует');return;
+  }
+  db.directions.push(clean);
+  save();
+ }
+
+ if(action==='2'){
+  const oldName=prompt('Текущее название:\n'+db.directions.join('\n'));
+  if(!oldName)return;
+  if(!db.directions.includes(oldName)){
+   alert('Направление не найдено');return;
+  }
+  const newName=prompt('Новое название:',oldName);
+  if(!newName||!newName.trim())return;
+  const clean=newName.trim();
+  if(db.directions.some(x=>x.toLowerCase()===clean.toLowerCase())){
+   alert('Такое название уже существует');return;
+  }
+  ['finance','projects','clients','recipes','tasks'].forEach(k=>{
+   db[k].forEach(x=>{
+    if(x.direction===oldName)x.direction=clean;
+   });
+  });
+  db.directions[db.directions.indexOf(oldName)]=clean;
+  save();
+ }
+
+ if(action==='3'){
+  const name=prompt('Какое направление удалить?\n'+db.directions.join('\n'));
+  if(!name)return;
+  if(!db.directions.includes(name)){
+   alert('Направление не найдено');return;
+  }
+  if(name==='Другое'){
+   alert('Это направление нельзя удалить');return;
+  }
+  if(!confirm('Удалить «'+name+'»? Все связанные записи будут перенесены в «Другое».'))return;
+  if(!db.directions.includes('Другое'))db.directions.push('Другое');
+  ['finance','projects','clients','recipes','tasks'].forEach(k=>{
+   db[k].forEach(x=>{
+    if(x.direction===name)x.direction='Другое';
+   });
+  });
+  db.directions=db.directions.filter(x=>x!==name);
+  save();
+ }
+}
 }
 
 function clientHistory(id){
